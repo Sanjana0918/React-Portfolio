@@ -1,0 +1,32 @@
+name: Deploy React App to ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    - name: Login to Amazon ECR
+      run: |
+        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 156583401640.dkr.ecr.ap-south-1.amazonaws.com
+
+    - name: Build, tag, and push Docker image
+      run: |
+        docker build -t react-app .
+        docker tag react-app:latest 156583401640.dkr.ecr.ap-south-1.amazonaws.com/day1:latest
+        docker push 156583401640.dkr.ecr.ap-south-1.amazonaws.com/day1:latest
+
